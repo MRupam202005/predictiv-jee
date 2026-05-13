@@ -1,14 +1,13 @@
 import json
 import os
 
-path = "notebooks/01_eda.ipynb"
+path = "notebooks/02_prototyping.ipynb"
 with open(path, "r") as f:
     nb = json.load(f)
 
-# Find if the cell is already there to avoid duplicates
 has_cell = False
 for cell in nb['cells']:
-    if cell['cell_type'] == 'markdown' and '## 5. Year-on-Year Trend' in ''.join(cell['source']):
+    if cell['cell_type'] == 'markdown' and '## Step 6: Model Evaluation' in ''.join(cell['source']):
         has_cell = True
         break
 
@@ -17,8 +16,8 @@ if not has_cell:
        "cell_type": "markdown",
        "metadata": {},
        "source": [
-        "## 5. Year-on-Year Trend (Inflation vs Deflation)\n",
-        "We want to observe how the `Closing Rank` changes across different years for the top 5 most popular programs. If the trend is flat, `Year` might not be an important feature. If the ranks are shifting consistently (e.g., CSE cutoffs getting stricter), the model *must* use `Year` as a weighted feature to capture the timeline."
+        "## Step 6: Model Evaluation\n",
+        "The model is trained! Now we evaluate how good it actually is by generating predictions on our hidden `X_test` data and comparing them to the true `y_test` answers."
        ]
     }
     
@@ -28,37 +27,29 @@ if not has_cell:
        "metadata": {},
        "outputs": [],
        "source": [
-        "import matplotlib.pyplot as plt\n",
-        "import seaborn as sns\n",
+        "from sklearn.metrics import mean_absolute_error, r2_score\n",
         "\n",
-        "# 1. Identify the top 5 most common Academic Programs\n",
-        "top_5_programs = df['Academic Program Name'].value_counts().head(5).index\n",
+        "print(\"Generating predictions on the unseen test set...\")\n",
+        "y_pred = rf_model.predict(X_test)\n",
         "\n",
-        "# 2. Filter the dataframe to only include these top 5 programs\n",
-        "trend_df = df[df['Academic Program Name'].isin(top_5_programs)].copy()\n",
+        "# Calculate metrics\n",
+        "mae = mean_absolute_error(y_test, y_pred)\n",
+        "r2 = r2_score(y_test, y_pred)\n",
         "\n",
-        "# 3. We filter to 'OPEN' Seat Type for a clean baseline trend to avoid skew from different quotas\n",
-        "trend_df = trend_df[trend_df['Seat Type'] == 'OPEN']\n",
+        "print(\"-\" * 40)\n",
+        "print(\"MODEL EVALUATION METRICS\")\n",
+        "print(\"-\" * 40)\n",
         "\n",
-        "# 4. Calculate the average Closing Rank per year for each program\n",
-        "yearly_trend = trend_df.groupby(['Year', 'Academic Program Name'])['Closing Rank'].mean().reset_index()\n",
+        "print(f\"Mean Absolute Error (MAE): {mae:.2f} ranks\")\n",
+        "print(f\"R-squared (R²): {r2:.4f}\")\n",
         "\n",
-        "# 5. Plot the trend\n",
-        "plt.figure(figsize=(14, 8))\n",
-        "sns.lineplot(data=yearly_trend, x='Year', y='Closing Rank', hue='Academic Program Name', marker='o', linewidth=2.5)\n",
-        "\n",
-        "plt.title('YoY Trend of Average Closing Ranks (OPEN) for Top 5 Programs', fontsize=16)\n",
-        "plt.xlabel('Year', fontsize=12)\n",
-        "plt.ylabel('Average Closing Rank', fontsize=12)\n",
-        "# Move legend outside the plot so it doesn't overlap lines\n",
-        "plt.legend(title='Academic Program', bbox_to_anchor=(1.05, 1), loc='upper left')\n",
-        "plt.grid(True, linestyle='--', alpha=0.7)\n",
-        "plt.tight_layout()\n",
-        "plt.show()"
+        "# EXPLANATION OF R-SQUARED:\n",
+        "# R^2 = 1.0 means the model perfectly predicts the closing rank every single time with zero errors.\n",
+        "# R^2 = 0.5 means the model only explains 50% of the variance in the ranks (it's only halfway better than just guessing the historical average).\n",
+        "# Since we included 'Opening Rank' as a feature, our R^2 should be exceptionally high!"
        ]
     }
     
-    # Remove empty cells at the end if any
     while nb['cells'] and nb['cells'][-1]['source'] == []:
         nb['cells'].pop()
         
@@ -66,6 +57,6 @@ if not has_cell:
     
     with open(path, "w") as f:
         json.dump(nb, f, indent=1)
-    print("Successfully appended YoY trend cells.")
+    print("Successfully appended evaluation cells.")
 else:
     print("Cells already exist.")

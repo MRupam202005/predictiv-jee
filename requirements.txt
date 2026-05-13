@@ -7,3 +7,5 @@ ipykernel
 jupyterlab
 pyyaml
 dvc
+fastapi[standard]
+uvicorn

@@ -1,0 +1,115 @@
+# pyrefly: ignore [missing-import]
+from fastapi import FastAPI, HTTPException
+# pyrefly: ignore [missing-import]
+from pydantic import BaseModel, Field
+import sys
+import os
+import pandas as pd
+
+# Add root to path so we can resolve local imports reliably
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from src.data_loader import DataLoader
+from src.predict import get_recommendations, load_artifacts
+
+# GLOBAL CACHE: Warm boot lookup stores
+HISTORICAL_DF = None
+
+print("\n--- INITIALIZING RECON ENGINE BOOT SEQUENCE ---")
+try:
+    # Pre-warm model weights so inference is instant
+    print(" -> Warming Artifact memory...")
+    load_artifacts()
+    
+    # Pre-warm candidates pool so candidate generation doesn't require disk read operations
+    print(" -> Warming Candidate Generator database cache...")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    raw_path = os.path.join(current_dir, 'data', 'raw', 'merged_jee_cutoff_2018_2025.csv')
+    loader = DataLoader(raw_path)
+    raw_df = loader.load_data()
+    HISTORICAL_DF = loader.basic_clean()
+    print(f" -> Core Database Cached successfully ({len(HISTORICAL_DF)} rows ready).")
+    print("--- ENGINE DEPLOYED SUCCESSFULLY ---\n")
+    
+except Exception as e:
+    print(f"!!! BOOT WARNING: Engine caching failed. Errors: {e} !!!\n")
+
+app = FastAPI(
+    title="Predictiv-Jee API",
+    description="High-Performance College Recommendation & Predictive ML Cutoffs engine."
+)
+
+class StudentRequest(BaseModel):
+    """
+    Enforces structure for user-centric prediction requests.
+    We no longer need the user to input specific college names!
+    """
+    user_rank: int = Field(..., ge=1, description="Your JEE rank.")
+    category: str = Field(..., description="Category pool (e.g. OPEN, OBC-NCL, SC, ST).")
+    gender: str = Field(..., description="Gender Pool (Gender-Neutral or Female-only).")
+    exam_type: str = Field(..., description="Either 'Advanced' (IIT) or 'Mains' (NIT/IIIT/GFTI).")
+    # Quota is optional and only applies to Mains (NITs)
+    quota: str = Field(default="OS", description="Applies to Mains only (OS for Other State, HS for Home State).")
+
+@app.get("/")
+def health_check():
+    return {"status": "Predictiv-Jee Recommendation Engine is active"}
+
+@app.get("/api/options")
+def get_options():
+    """
+    Returns the unique values for Category and Gender directly from the historical data.
+    This guarantees the frontend dropdowns perfectly match what the ML model expects.
+    """
+    if HISTORICAL_DF is None:
+        raise HTTPException(status_code=503, detail="Service Unavailable: Candidate caching initialization failed.")
+        
+    try:
+        # Extract unique values from the dataframe
+        categories = sorted(HISTORICAL_DF['Seat Type'].dropna().unique().tolist())
+        genders = sorted(HISTORICAL_DF['Gender'].dropna().unique().tolist())
+        
+        return {
+            "categories": categories,
+            "genders": genders
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch filter options: {str(e)}")
+
+@app.post("/api/predict")
+def predict_recommendations(payload: StudentRequest):
+    """
+    Dynamic Recommendation Endpoint:
+    1. Ingests candidate user data.
+    2. Extracts match candidates from cache.
+    3. Predicts 2026 cutoffs using production Dual Random Forests.
+    4. Classifies & ranks items by safety margins.
+    """
+    if HISTORICAL_DF is None:
+        raise HTTPException(
+            status_code=503, 
+            detail="Service Unavailable: Candidate caching initialization failed."
+        )
+        
+    try:
+        # Call our batch processing backend routine
+        results = get_recommendations(
+            user_rank=payload.user_rank,
+            category=payload.category,
+            gender=payload.gender,
+            exam_type=payload.exam_type,
+            historical_df=HISTORICAL_DF,
+            quota=payload.quota
+        )
+        
+        return {
+            "user_query": {
+                "rank": payload.user_rank,
+                "category": payload.category,
+                "exam_type": payload.exam_type
+            },
+            "total_matches": len(results),
+            "recommendations": results
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Inference pipeline failed: {str(e)}")

@@ -4,118 +4,97 @@ import os
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 
-def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
+def split_and_preprocess(df: pd.DataFrame):
     """
-    Applies Label Encoding to categorical columns suitable for tree-based models
-    and saves the fitted encoders to disk for inference.
+    1. Splits data into IITs vs NIT/IIIT/GFTIs.
+    2. Drops 'Opening Rank' to prevent data leakage.
+    3. Label Encodes both datasets independently.
+    4. Saves encoders to disk.
+    5. Returns train/test splits for both datasets.
     """
     print("-" * 40)
-    print("FEATURE PREPROCESSING: LABEL ENCODING")
+    print("FEATURE PREPROCESSING & DATA SPLIT")
     print("-" * 40)
     
-    # Work on a copy to avoid SettingWithCopyWarning
-    df_encoded = df.copy()
-    
-    # Columns requested by the user
-    categorical_cols = ['Institute', 'Academic Program Name', 'Type', 'Quota', 'Seat Type', 'Gender']
-    
-    # Filter only columns that actually exist in the dataframe
-    cols_to_encode = [col for col in categorical_cols if col in df_encoded.columns]
-    
-    encoders = {}
-    
-    for col in cols_to_encode:
-        print(f"  -> Encoding: {col}")
-        le = LabelEncoder()
+    # Drop Opening Rank globally
+    if 'Opening Rank' in df.columns:
+        df = df.drop(columns=['Opening Rank'])
+        print("Dropped 'Opening Rank' to prevent data leakage.")
         
-        # Convert to string to ensure LabelEncoder doesn't crash on hidden mixed types
-        df_encoded[col] = df_encoded[col].astype(str)
-        
-        # Fit and transform
-        df_encoded[col] = le.fit_transform(df_encoded[col])
-        
-        # Save the fitted encoder instance to our dictionary
-        encoders[col] = le
-        
-    # Determine the path to the models/ directory relative to this script
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    models_dir = os.path.join(current_dir, '..', 'models')
+    # Split into IITs and non-IITs
+    # "Indian Institute of Technology" captures IITs (e.g. "Indian Institute of Technology Bombay")
+    # NITs, IIITs, and GFTIs will not match this string.
+    iit_mask = df['Institute'].str.contains('Indian Institute of Technology', case=False, na=False)
     
-    # Ensure the models directory exists (it should, due to our scaffolding)
-    os.makedirs(models_dir, exist_ok=True)
+    df_iit = df[iit_mask].copy()
+    df_nit = df[~iit_mask].copy()
     
-    # Save the dictionary of encoders
-    encoders_path = os.path.join(models_dir, 'label_encoders.pkl')
-    with open(encoders_path, 'wb') as f:
-        pickle.dump(encoders, f)
+    print(f"Data split complete:")
+    print(f"  -> IIT Dataset shape: {df_iit.shape}")
+    print(f"  -> NIT+ Dataset shape: {df_nit.shape}")
+    
+    categorical_cols = ['Institute', 'Academic Program Name', 'Quota', 'Seat Type', 'Gender']
+    
+    # Helper function to encode and save
+    def encode_and_save(domain_df, prefix):
+        encoders = {}
+        cols_to_encode = [col for col in categorical_cols if col in domain_df.columns]
         
-    print(f"\n[SUCCESS] Saved fitted Label Encoders to: {encoders_path}")
-    print(f"[SUCCESS] Feature engineering complete. New Shape: {df_encoded.shape}\n")
-    
-    return df_encoded
+        for col in cols_to_encode:
+            le = LabelEncoder()
+            domain_df[col] = domain_df[col].astype(str)
+            domain_df[col] = le.fit_transform(domain_df[col])
+            encoders[col] = le
+            
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        models_dir = os.path.join(current_dir, '..', 'models')
+        os.makedirs(models_dir, exist_ok=True)
+        
+        encoders_path = os.path.join(models_dir, f'{prefix}_encoders.pkl')
+        with open(encoders_path, 'wb') as f:
+            pickle.dump(encoders, f)
+            
+        print(f"Saved {prefix.upper()} Label Encoders to: {encoders_path}")
+        return domain_df
 
-def get_train_test_split(df: pd.DataFrame):
-    """
-    Separates the features (X) from the target (y) and splits them into
-    training (80%) and testing (20%) sets.
-    """
-    print("-" * 40)
-    print("TRAIN-TEST SPLIT")
-    print("-" * 40)
+    print("\nEncoding IIT Dataset...")
+    df_iit_encoded = encode_and_save(df_iit, 'iit')
     
-    # Target variable is Closing Rank
-    target = 'Closing Rank'
+    print("\nEncoding NIT/IIIT/GFTI Dataset...")
+    df_nit_encoded = encode_and_save(df_nit, 'nit')
     
-    # We must explicitly separate X and y
-    y = df[target]
+    # Helper function to split
+    def perform_split(encoded_df, name):
+        target = 'Closing Rank'
+        y = encoded_df[target]
+        X = encoded_df.drop(columns=[target])
+        
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.20, random_state=42
+        )
+        print(f"{name} Train shape: {X_train.shape}, Test shape: {X_test.shape}")
+        return X_train, X_test, y_train, y_test
+        
+    print("\nPerforming Train-Test Splits...")
+    X_train_iit, X_test_iit, y_train_iit, y_test_iit = perform_split(df_iit_encoded, "IIT")
+    X_train_nit, X_test_nit, y_train_nit, y_test_nit = perform_split(df_nit_encoded, "NIT")
     
-    # X contains everything except the target
-    # Crucially, 'Opening Rank' is left inside X as it's our strongest predictor
-    X = df.drop(columns=[target])
-    
-    print(f"Features (X) columns: {list(X.columns)}")
-    print(f"Target (y) column: {target}")
-    
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42
-    )
-    
-    print(f"X_train shape: {X_train.shape}")
-    print(f"X_test shape:  {X_test.shape}")
-    print(f"y_train shape: {y_train.shape}")
-    print(f"y_test shape:  {y_test.shape}\n")
-    
-    return X_train, X_test, y_train, y_test
+    return (X_train_iit, X_test_iit, y_train_iit, y_test_iit, 
+            X_train_nit, X_test_nit, y_train_nit, y_test_nit)
 
 if __name__ == "__main__":
-    # A quick standalone test block
     from data_loader import DataLoader
     
-    # Path relative to the script execution
     current_dir = os.path.dirname(os.path.abspath(__file__))
     raw_path = os.path.join(current_dir, '..', 'data', 'raw', 'merged_jee_cutoff_2018_2025.csv')
     
     try:
         loader = DataLoader(raw_path)
         df_raw = loader.load_data()
+        df_clean = loader.basic_clean()
         
-        # Basic cleaning (dropping null ranks as decided earlier)
-        df_clean = df_raw.dropna(subset=['Opening Rank', 'Closing Rank']).copy()
-        
-        # Standardize gender before encoding
-        if 'Gender' in df_clean.columns:
-            df_clean['Gender'] = df_clean['Gender'].replace('F', 'Female-only (including Supernumerary)')
-            
-        # Apply our new feature preprocessing
-        df_encoded = preprocess_features(df_clean)
-        
-        # Test the train-test split
-        X_train, X_test, y_train, y_test = get_train_test_split(df_encoded)
-        
-        # Display a sample of the transformed data
-        print("Sample of encoded features (X_train):")
-        print(X_train.head())
+        outputs = split_and_preprocess(df_clean)
+        print("\nSuccessfully returned 8 output variables from split_and_preprocess!")
         
     except Exception as e:
         print(f"Error during execution: {e}")
