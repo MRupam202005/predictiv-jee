@@ -1,5 +1,6 @@
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 # pyrefly: ignore [missing-import]
 from pydantic import BaseModel, Field
 import sys
@@ -36,6 +37,16 @@ except Exception as e:
 app = FastAPI(
     title="Predictiv-Jee API",
     description="High-Performance College Recommendation & Predictive ML Cutoffs engine."
+)
+
+# Allow ALL origins during local development.
+# To lock down in production: replace "*" with your deployed frontend URL.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,   # Must be False when allow_origins=["*"]
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 class StudentRequest(BaseModel):
