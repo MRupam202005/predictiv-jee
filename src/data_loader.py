@@ -5,7 +5,7 @@ import os
 
 class DataLoader:
     """
-    A class to handle the loading and initial inspection of the raw JoSAA dataset.
+    1. Class to handle the loading and initial inspection of the raw JoSAA dataset.
     """
     def __init__(self, file_path: str):
         self.file_path = file_path

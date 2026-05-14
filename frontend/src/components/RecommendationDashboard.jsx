@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import UserGuide from './UserGuide';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -407,6 +408,9 @@ export default function RecommendationDashboard() {
             eligible college and rank them by your admission probability.
           </p>
         </div>
+
+        {/* User Guide */}
+        <UserGuide />
 
         {/* Input Form */}
         <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 backdrop-blur-sm mb-8">
