@@ -10,21 +10,21 @@ const TAG_STYLES = {
     bg: 'bg-emerald-950/40',
     badge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
     dot: 'bg-emerald-400',
-    label: '✅ Safe',
+    label: 'Safe',
   },
   Target: {
     border: 'border-amber-500/40',
     bg: 'bg-amber-950/40',
     badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
     dot: 'bg-amber-400',
-    label: '🎯 Target',
+    label: 'Target',
   },
   Reach: {
     border: 'border-rose-500/40',
     bg: 'bg-rose-950/40',
     badge: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
     dot: 'bg-rose-400',
-    label: '🚀 Reach',
+    label: 'Reach',
   },
 };
 
