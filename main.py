@@ -62,6 +62,16 @@ class StudentRequest(BaseModel):
     # Quota is optional and only applies to Mains (NITs)
     quota: str = Field(default="OS", description="Applies to Mains only (OS for Other State, HS for Home State).")
 
+class TrendRequest(BaseModel):
+    """
+    Enforces structure for historical trend requests for a specific branch.
+    """
+    institute: str
+    program: str
+    category: str
+    gender: str
+    quota: str
+
 @app.get("/")
 def health_check():
     return {"status": "Predictiv-Jee Recommendation Engine is active"}
@@ -125,3 +135,45 @@ def predict_recommendations(payload: StudentRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference pipeline failed: {str(e)}")
+
+@app.post("/api/trends")
+def get_historical_trends(payload: TrendRequest):
+    """
+    Returns historical closing ranks for a specific college branch
+    over the available years (2018-2025).
+    Takes the maximum round (Round 6) data for each year.
+    """
+    if HISTORICAL_DF is None:
+        raise HTTPException(status_code=503, detail="Service Unavailable: Candidate caching initialization failed.")
+        
+    try:
+        # Filter the historical dataframe
+        mask = (
+            (HISTORICAL_DF['Institute'] == payload.institute) &
+            (HISTORICAL_DF['Academic Program Name'] == payload.program) &
+            (HISTORICAL_DF['Seat Type'] == payload.category) &
+            (HISTORICAL_DF['Gender'] == payload.gender) &
+            (HISTORICAL_DF['Quota'] == payload.quota)
+        )
+        
+        filtered = HISTORICAL_DF[mask].copy()
+        
+        if filtered.empty:
+            return {"trends": []}
+            
+        # For each year, we want the final round's closing rank
+        # Sort by year and round, then drop duplicates keeping the last round
+        trends = filtered.sort_values(by=['Year', 'Round']).drop_duplicates(subset=['Year'], keep='last')
+        
+        # Format the output for the charting library
+        trend_data = []
+        for _, row in trends.iterrows():
+            trend_data.append({
+                "year": int(row['Year']),
+                "closing_rank": int(row['Closing Rank'])
+            })
+            
+        return {"trends": trend_data}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch trends: {str(e)}")

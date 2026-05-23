@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import UserGuide from './UserGuide';
+import TrendChartModal from './TrendChartModal';
 
 const API_BASE = 'http://127.0.0.1:8000';
 
@@ -168,7 +169,7 @@ function BranchRow({ rec }) {
  * A single clickable college row with a smooth animated branch table below it.
  * Controlled externally via selectedCollege / onSelect props.
  */
-function CollegeRow({ college, filterTag, isSelected, onSelect }) {
+function CollegeRow({ college, filterTag, isSelected, onSelect, onTrendClick }) {
   const style = TAG_STYLES[college.bestTag] || TAG_STYLES.Target;
   const circumference = 2 * Math.PI * 15; // 94.25
   const filled = (college.maxChance / 100) * circumference;
@@ -272,12 +273,23 @@ function CollegeRow({ college, filterTag, isSelected, onSelect }) {
                   border-b border-white/5 last:border-0 transition-colors
                   ${isFirst ? 'bg-white/[0.03]' : 'hover:bg-white/[0.025]'}`}
               >
-                {/* Program name with best-match star */}
-                <div className="flex items-start gap-2 min-w-0">
-                  {isFirst && (
-                    <span className="shrink-0 mt-0.5 text-amber-400 text-xs">★</span>
-                  )}
-                  <p className="text-sm text-slate-200 leading-snug line-clamp-2">{rec.program}</p>
+                {/* Program name with best-match star & Trend Button */}
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-start gap-2">
+                    {isFirst && (
+                      <span className="shrink-0 mt-0.5 text-amber-400 text-xs">★</span>
+                    )}
+                    <p className="text-sm text-slate-200 leading-snug line-clamp-2">{rec.program}</p>
+                  </div>
+                  <button 
+                    onClick={() => onTrendClick(college.collegeName, rec)}
+                    className="flex items-center gap-1 text-[10px] text-blue-400/70 hover:text-blue-400 mt-1 uppercase tracking-wider font-bold transition-colors w-fit"
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    View Trends
+                  </button>
                 </div>
 
                 {/* Cutoff */}
@@ -317,6 +329,7 @@ export default function RecommendationDashboard() {
   const [options, setOptions] = useState({ categories: [], genders: [] });
   const [filterTag, setFilterTag] = useState('All');
   const [selectedCollege, setSelectedCollege] = useState(null);
+  const [activeTrend, setActiveTrend] = useState(null);
 
   // Fetch dropdown options from backend on mount
   useEffect(() => {
@@ -590,6 +603,18 @@ export default function RecommendationDashboard() {
                       onSelect={(name) =>
                         setSelectedCollege((prev) => (prev === name ? null : name))
                       }
+                      onTrendClick={(collegeName, rec) => {
+                        setActiveTrend({
+                          queryParams: {
+                            institute: collegeName,
+                            program: rec.program,
+                            category,
+                            gender,
+                            quota: examType === 'Mains' ? quota : 'AI'
+                          },
+                          predictedCutoff: rec.predicted_cutoff
+                        });
+                      }}
                     />
                   ))}
                 </div>
@@ -601,6 +626,14 @@ export default function RecommendationDashboard() {
             })()}
           </div>
         )}
+
+        {/* Trend Chart Modal Overlay */}
+        <TrendChartModal 
+          isOpen={!!activeTrend}
+          onClose={() => setActiveTrend(null)}
+          queryParams={activeTrend?.queryParams}
+          predictedCutoff={activeTrend?.predictedCutoff}
+        />
       </main>
     </div>
   );
