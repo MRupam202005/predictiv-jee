@@ -17,8 +17,13 @@ class DataLoader:
             raise FileNotFoundError(f"Data file not found at: {self.file_path}")
         
         print(f"Loading data from {self.file_path}...")
-        # We use low_memory=False because some columns might have mixed types initially (e.g., '1234' vs '1234P')
-        self.df = pd.read_csv(self.file_path, low_memory=False)
+        
+        if self.file_path.endswith('.parquet'):
+            self.df = pd.read_parquet(self.file_path)
+        else:
+            # We use low_memory=False because some columns might have mixed types initially (e.g., '1234' vs '1234P')
+            self.df = pd.read_csv(self.file_path, low_memory=False)
+            
         print(f"Data successfully loaded. Shape: (Rows, Columns) {self.df.shape}\n")
         return self.df
 

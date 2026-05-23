@@ -25,7 +25,7 @@ try:
     # Pre-warm candidates pool so candidate generation doesn't require disk read operations
     print(" -> Warming Candidate Generator database cache...")
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    raw_path = os.path.join(current_dir, 'data', 'raw', 'merged_jee_cutoff_2018_2025.csv')
+    raw_path = os.path.join(current_dir, 'data', 'raw', 'merged_jee_cutoff_2018_2025.parquet')
     loader = DataLoader(raw_path)
     raw_df = loader.load_data()
     HISTORICAL_DF = loader.basic_clean()
