@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/
+
+# Frontend
+frontend/
+
+# Data (Ignore raw CSVs, but keep the parquet!)
+data/raw/*.csv
+data/external/
+data/processed/
+
+# IDEs
+.vscode/
+.idea/

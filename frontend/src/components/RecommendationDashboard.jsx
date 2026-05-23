@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import UserGuide from './UserGuide';
 import TrendChartModal from './TrendChartModal';
 
-const API_BASE = 'http://127.0.0.1:8000';
+// Use environment variable for production, fallback to localhost for development
+const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 // Maps a safety tag to Tailwind classes for card styling
 const TAG_STYLES = {
