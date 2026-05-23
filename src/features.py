@@ -14,14 +14,15 @@ def split_and_preprocess(df: pd.DataFrame):
     """
     print("-" * 40)
     print("FEATURE PREPROCESSING & DATA SPLIT")
-    print("-" * 40)
+    print("-" * 40) 
     
-    # Drop Opening Rank globally
+    #Drop Opening Rank globally => Because it is not required and it cause data leakage (i.e cheating)
     if 'Opening Rank' in df.columns:
         df = df.drop(columns=['Opening Rank'])
         print("Dropped 'Opening Rank' to prevent data leakage.")
         
-    # Split into IITs and non-IITs
+    # Split into IITs and non-IITs dataframes => IITs are in one set of data and non-IITs are in another set of data
+    # This is done because IITs have their own admission criteria and they are different from non-IITs
     # "Indian Institute of Technology" captures IITs (e.g. "Indian Institute of Technology Bombay")
     # NITs, IIITs, and GFTIs will not match this string.
     iit_mask = df['Institute'].str.contains('Indian Institute of Technology', case=False, na=False)
@@ -35,7 +36,7 @@ def split_and_preprocess(df: pd.DataFrame):
     
     categorical_cols = ['Institute', 'Academic Program Name', 'Quota', 'Seat Type', 'Gender']
     
-    # Helper function to encode and save
+    # Helper function to encode and save label encoders for both datasets (IIT & NIT)=> Transform's the categorical entries into numerical format
     def encode_and_save(domain_df, prefix):
         encoders = {}
         cols_to_encode = [col for col in categorical_cols if col in domain_df.columns]
@@ -62,9 +63,10 @@ def split_and_preprocess(df: pd.DataFrame):
     
     print("\nEncoding NIT/IIIT/GFTI Dataset...")
     df_nit_encoded = encode_and_save(df_nit, 'nit')
+    # Now both the dataset contains only Numerical enrties in all the required columns
     
     # Helper function to split
-    def perform_split(encoded_df, name):
+    def perform_split(encoded_df, name): # Splits the dataset into train and test sets
         target = 'Closing Rank'
         y = encoded_df[target]
         X = encoded_df.drop(columns=[target])

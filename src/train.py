@@ -28,7 +28,7 @@ def train_and_evaluate_model(X_train, X_test, y_train, y_test, name):
     r2 = r2_score(y_test, y_pred)
     
     print("-" * 40)
-    print(f"{name} MODEL METRICS (Without Opening Rank)")
+    print(f"{name} MODEL METRICS")
     print("-" * 40)
     print(f"Mean Absolute Error (MAE): {mae:.2f} ranks")
     print(f"R-squared (R²): {r2:.4f}")

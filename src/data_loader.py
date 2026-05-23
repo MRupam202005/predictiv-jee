@@ -103,7 +103,7 @@ class DataLoader:
         cols_to_encode = ['Gender', 'Seat Type', 'Quota']
         cols_to_encode = [c for c in cols_to_encode if c in self.df.columns]
         
-        print(f"Applying One-Hot Encoding to: {cols_to_encode}")
+        print(f"Applying One-Hot Encoding to: {cols_to_encode}") 
         # pd.get_dummies converts categorical variables into dummy/indicator variables
         self.df = pd.get_dummies(self.df, columns=cols_to_encode, dummy_na=False, dtype=int)
         

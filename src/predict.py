@@ -7,8 +7,9 @@ import pandas as pd
 import numpy as np
 
 # Setup Global Cache to keep the servers lightning fast
-_ARTIFACTS_CACHE = None
+_ARTIFACTS_CACHE = None                                # Globaly declared variable to store the loaded models and encoders in memory => This makes the app faster
 
+# Function to load the trained models and encoders
 def load_artifacts():
     """Loads all models and encoders into a global in-memory cache."""
     global _ARTIFACTS_CACHE
@@ -96,7 +97,7 @@ def get_recommendations(user_rank: int, category: str, gender: str, exam_type: s
     
     # Save raw records so we can build response dict with strings
     raw_meta = inference_df.copy()
-
+    print("Raw metadata shape",raw_meta.shape)
     # Perform Batch Label Encoding
     for col, encoder in encoders.items():
         # Filter out items not present in the encoder vocab to avoid downstream crashes
@@ -104,22 +105,26 @@ def get_recommendations(user_rank: int, category: str, gender: str, exam_type: s
         
         # Encode the column in bulk
         inference_df[col] = encoder.transform(inference_df[col])
-    
+    print("Shape after encoding",inference_df.shape)
     # Synchronize metadata indices in case anything was purged in encoding filter
     raw_meta = raw_meta.loc[inference_df.index]
-
+    print("Shape after synchronizing metadata indices",raw_meta.shape)
     if inference_df.empty:
         print("Warning: All candidates were filtered out by LabelEncoder vocabulary constraints.")
         return []
 
     # The Random Forest expects strict column ordering matching the original training setup
+    # print("Inference DataFrame: \n",inference_df)
     expected_columns = ['Institute', 'Academic Program Name', 'Quota', 'Seat Type', 'Gender', 'Round', 'Year']
     inference_matrix = inference_df[expected_columns]
+    # print("\n\nInference Matrix( Which is accutally using for prediction in the model)\n",inference_matrix)
 
     # 4. Batch Inference Phase (Ultra Efficient)
     print("Executing Batch Machine Learning Inference...")
     predicted_cutoffs = model.predict(inference_matrix)
-    
+    # print("\n\nPredicted cutoffs (Model's best guess)",predicted_cutoffs)
+    print("Shape of predicted cutoffs",predicted_cutoffs.shape)
+    print("Cutoffs",predicted_cutoffs[:5])  
     # 5. Bucket & Serialization Phase
     recommendations = []
     
