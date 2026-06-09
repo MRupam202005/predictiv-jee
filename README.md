@@ -35,11 +35,11 @@ This visualization demonstrates the correlation between the model's predictions 
 ![Actual vs Predicted Closing Rank](data/external/output1.png)
 
 ### 2. Residual Distribution (The Histograms)
-The residual distribution measures prediction error (Actual - Predicted). Both models feature a sharp peak exactly at zero, confirming that our models are unbiased and do not systematically over-predict or under-predict. 
+The residual distribution measures prediction error (Actual - Predicted). Both models feature a sharp peak exactly at zero, confirming that the models are unbiased and do not systematically over-predict or under-predict. 
 ![Residual Distribution](data/external/output2.png)
 
 ### 3. Absolute Error by Year (Box Plots)
-By grouping prediction errors by admission year, we validate the model's stability over time. The models maintain strong consistency, correctly adapting to shifting admission patterns year over year.
+By grouping prediction errors by admission year, I validate the model's stability over time. The models maintain strong consistency, correctly adapting to shifting admission patterns year over year.
 ![Absolute Error by Year](data/external/output3.png)
 
 ### 📈 Evaluation Metrics
