@@ -558,7 +558,7 @@ export default function RecommendationDashboard() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <div>
                 <h3 className="text-white font-bold text-lg">
-                  {results.results_count} Colleges Found
+                  {results.total_matches} Colleges Found
                 </h3>
                 <p className="text-slate-500 text-sm">
                   For JEE {examType} Rank {results.user_query.rank.toLocaleString()} · {results.user_query.category}
@@ -568,7 +568,7 @@ export default function RecommendationDashboard() {
               {/* Tag Filter Pills */}
               <div className="flex gap-2 flex-wrap">
                 {['All', 'Safe', 'Target', 'Reach'].map((tag) => {
-                  const count = tag === 'All' ? results.results_count : (tagCounts?.[tag] || 0);
+                  const count = tag === 'All' ? results.total_matches : (tagCounts?.[tag] || 0);
                   const active = filterTag === tag;
                   return (
                     <button

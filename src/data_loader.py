@@ -78,42 +78,7 @@ class DataLoader:
             
         return self.df
 
-    def clean_and_encode(self) -> pd.DataFrame:
-        """
-        Cleans the data and applies encoding:
-        1. Drops rows with missing Open/Close ranks.
-        2. Standardizes Gender strings.
-        3. Applies One-Hot Encoding to low-cardinality categoricals.
-        """
-        if self.df is None:
-            raise ValueError("Data not loaded. Call load_data() first.")
 
-        print("-" * 40)
-        print("3. CLEANING & ENCODING")
-        print("-" * 40)
-        
-        # 1. Drop Missing Values
-        initial_len = len(self.df)
-        self.df = self.df.dropna(subset=['Opening Rank', 'Closing Rank'])
-        print(f"Dropped {initial_len - len(self.df)} rows due to missing Ranks.")
-
-        # 2. Standardize Dirty Data (Gender)
-        if 'Gender' in self.df.columns:
-            self.df['Gender'] = self.df['Gender'].replace(
-                'F', 'Female-only (including Supernumerary)'
-            )
-            print("Standardized 'Gender' column values.")
-
-        # 3. One-Hot Encoding (OHE)
-        cols_to_encode = ['Gender', 'Seat Type', 'Quota']
-        cols_to_encode = [c for c in cols_to_encode if c in self.df.columns]
-        
-        print(f"Applying One-Hot Encoding to: {cols_to_encode}") 
-        # pd.get_dummies converts categorical variables into dummy/indicator variables
-        self.df = pd.get_dummies(self.df, columns=cols_to_encode, dummy_na=False, dtype=int)
-        
-        print(f"New Data Shape: (Rows, Columns) {self.df.shape}")
-        return self.df
 
 if __name__ == "__main__":   # Test the loader independently
     # Ensure this runs relative to the project root
@@ -122,7 +87,7 @@ if __name__ == "__main__":   # Test the loader independently
     try:
         df = loader.load_data()
         loader.inspect_data()
-        clean_df = loader.clean_and_encode()
+        clean_df = loader.basic_clean()
     except Exception as e:
         print(f"Error: {e}")
 

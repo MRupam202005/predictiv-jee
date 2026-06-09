@@ -5,6 +5,7 @@ import pickle
 import pandas as pd
 # pyrefly: ignore [missing-import]
 import numpy as np
+from datetime import datetime
 
 # Setup Global Cache to keep the servers lightning fast
 _ARTIFACTS_CACHE = None                                # Globaly declared variable to store the loaded models and encoders in memory => This makes the app faster
@@ -84,7 +85,8 @@ def get_recommendations(user_rank: int, category: str, gender: str, exam_type: s
     print(f"Found {len(candidates)} unique branch candidates for evaluation...")
 
     # 3. Batch Data Preparation Phase
-    # Force properties to 2026 simulation settings
+    # Force properties to next year's simulation settings
+    target_year = datetime.now().year + 1
     inference_df = pd.DataFrame({
         'Institute': candidates['Institute'],
         'Academic Program Name': candidates['Academic Program Name'],
@@ -92,7 +94,7 @@ def get_recommendations(user_rank: int, category: str, gender: str, exam_type: s
         'Seat Type': category,
         'Gender': gender,
         'Round': 6, # Predicting for final round
-        'Year': 2026 # Simulating next year's cutoff
+        'Year': target_year # Simulating next year's cutoff
     })
     
     # Save raw records so we can build response dict with strings

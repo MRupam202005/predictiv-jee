@@ -40,12 +40,15 @@ app = FastAPI(
     description="High-Performance College Recommendation & Predictive ML Cutoffs engine."
 )
 
-# Allow ALL origins during local development.
-# To lock down in production: replace "*" with your deployed frontend URL.
+# Secure CORS configuration
+# Defaults to "*" for local development, override with FRONTEND_URL in production
+frontend_url = os.getenv("FRONTEND_URL", "*")
+origins = [frontend_url] if frontend_url != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,   # Must be False when allow_origins=["*"]
+    allow_origins=origins,
+    allow_credentials=frontend_url != "*",   # Must be False when allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
