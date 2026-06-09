@@ -48,14 +48,14 @@ By grouping prediction errors by admission year, I validate the model's stabilit
 ----------------------------------------
 IIT MODEL METRICS
 ----------------------------------------
-Mean Absolute Error (MAE): 182.38 ranks
-R-squared (R²): 0.9923
+Mean Absolute Error (MAE): 91.62 ranks
+R-squared (R²): 0.9971
 
 ----------------------------------------
 NIT/IIIT/GFTI MODEL METRICS
 ----------------------------------------
-Mean Absolute Error (MAE): 2342.52 ranks
-R-squared (R²): 0.9420
+Mean Absolute Error (MAE): 1828.53 ranks
+R-squared (R²): 0.9583
 ```
 
 

@@ -18,7 +18,8 @@ def train_and_evaluate_model(X_train, X_test, y_train, y_test, name):
         random_state=42,
         n_jobs=-1,
         max_depth=20,
-        min_samples_leaf=4
+        min_samples_split=2,
+        min_samples_leaf=1
     )
     
     print(f"Starting {name} training on {len(X_train)} rows. This may take a minute...")
