@@ -26,6 +26,41 @@ Predictiv-JEE is a full-stack, data-driven web application designed to help engi
 - **Dynamic Probability Engine:** Developed a custom mathematical algorithm that translates ML cutoff margins into visual admission percentages (0-99%), rendered via interactive SVG progress rings.
 - **Historical Trend Charts:** Integrated **Recharts** to plot 8-year historical closing rank trends per branch, beautifully overlaying the ML's future prediction.
 
+## 📊 Model Evaluation
+
+Our Dual Random Forest models are strictly evaluated against actual historical cutoffs to ensure high precision in predictions.
+
+### 1. Actual vs Predicted Closing Rank (The Scatter Plots)
+This visualization demonstrates the correlation between the model's predictions and actual historical closing ranks. A tight alignment along the red dashed line indicates high accuracy. The IIT model shows exceptional precision, while the NIT+ model gracefully handles a much wider, noisier distribution of ranks.
+![Actual vs Predicted Closing Rank](data/external/output1.png)
+
+### 2. Residual Distribution (The Histograms)
+The residual distribution measures prediction error (Actual - Predicted). Both models feature a sharp peak exactly at zero, confirming that our models are unbiased and do not systematically over-predict or under-predict. 
+![Residual Distribution](data/external/output2.png)
+
+### 3. Absolute Error by Year (Box Plots)
+By grouping prediction errors by admission year, we validate the model's stability over time. The models maintain strong consistency, correctly adapting to shifting admission patterns year over year.
+![Absolute Error by Year](data/external/output3.png)
+
+### 📈 Evaluation Metrics
+
+```text
+----------------------------------------
+IIT MODEL METRICS
+----------------------------------------
+Mean Absolute Error (MAE): 38.14 ranks
+Root Mean Squared Error (RMSE): 114.58 ranks
+R-squared (R²): 0.9993
+
+----------------------------------------
+NIT/IIIT/GFTI MODEL METRICS
+----------------------------------------
+Mean Absolute Error (MAE): 689.56 ranks
+Root Mean Squared Error (RMSE): 5521.77 ranks
+R-squared (R²): 0.9863
+```
+
+
 ## 🛠️ Technology Stack
 - **Frontend:** React.js, Vite, Tailwind CSS (v4), Recharts
 - **Backend API:** Python, FastAPI, Uvicorn, Pydantic
@@ -66,37 +101,3 @@ npm install
 npm run dev
 ```
 *The Application is now live at `http://localhost:5173`*
-
-## 📊 Model Evaluation
-
-Our Dual Random Forest models are strictly evaluated against actual historical cutoffs to ensure high precision in predictions.
-
-### 1. Actual vs Predicted Closing Rank (The Scatter Plots)
-This visualization demonstrates the correlation between the model's predictions and actual historical closing ranks. A tight alignment along the red dashed line indicates high accuracy. The IIT model shows exceptional precision, while the NIT+ model gracefully handles a much wider, noisier distribution of ranks.
-![Actual vs Predicted Closing Rank](data/external/output1.png)
-
-### 2. Residual Distribution (The Histograms)
-The residual distribution measures prediction error (Actual - Predicted). Both models feature a sharp peak exactly at zero, confirming that our models are unbiased and do not systematically over-predict or under-predict. 
-![Residual Distribution](data/external/output2.png)
-
-### 3. Absolute Error by Year (Box Plots)
-By grouping prediction errors by admission year, we validate the model's stability over time. The models maintain strong consistency, correctly adapting to shifting admission patterns year over year.
-![Absolute Error by Year](data/external/output3.png)
-
-### 📈 Evaluation Metrics
-
-```text
-----------------------------------------
-IIT MODEL METRICS
-----------------------------------------
-Mean Absolute Error (MAE): 38.14 ranks
-Root Mean Squared Error (RMSE): 114.58 ranks
-R-squared (R²): 0.9993
-
-----------------------------------------
-NIT/IIIT/GFTI MODEL METRICS
-----------------------------------------
-Mean Absolute Error (MAE): 689.56 ranks
-Root Mean Squared Error (RMSE): 5521.77 ranks
-R-squared (R²): 0.9863
-```
