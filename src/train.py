@@ -59,8 +59,12 @@ if __name__ == "__main__":
     
     # 2. Basic Clean
     clean_df = loader.basic_clean()
+    # clean_df = loader.clean_and_encode()
     
     # 3. Split & Encode Features
+    # - Split into IITs and non-IITs
+    # - Encode categorical features and also store the encoders 
+    # - Split both the dataset in train and test
     print("\nExtracting and splitting datasets...")
     (X_train_iit, X_test_iit, y_train_iit, y_test_iit, 
      X_train_nit, X_test_nit, y_train_nit, y_test_nit) = split_and_preprocess(clean_df)
@@ -72,7 +76,7 @@ if __name__ == "__main__":
     
     # 5. Save Models
     print("\n--- SAVING Phase ---")
-    save_model(model_iit, "iit_model.pkl")
+    save_model(model_iit, "iit_model.pkl") 
     save_model(model_nit, "nit_model.pkl")
     
     print("\n=== DUAL PIPELINE COMPLETE ===")

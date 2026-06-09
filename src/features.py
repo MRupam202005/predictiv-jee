@@ -59,10 +59,10 @@ def split_and_preprocess(df: pd.DataFrame):
         return domain_df
 
     print("\nEncoding IIT Dataset...")
-    df_iit_encoded = encode_and_save(df_iit, 'iit')
+    df_iit_encoded = encode_and_save(df_iit, 'iit')     # iit_encoders.pkl => contains encoding for iit data
     
     print("\nEncoding NIT/IIIT/GFTI Dataset...")
-    df_nit_encoded = encode_and_save(df_nit, 'nit')
+    df_nit_encoded = encode_and_save(df_nit, 'nit')     # nit_encoders.pkl => contains encoding for nit data (and others)
     # Now both the dataset contains only Numerical enrties in all the required columns
     
     # Helper function to split
@@ -94,6 +94,7 @@ if __name__ == "__main__":
         loader = DataLoader(raw_path)
         df_raw = loader.load_data()
         df_clean = loader.basic_clean()
+        # df_clean = loader.clean_and_encode()
         
         outputs = split_and_preprocess(df_clean)
         print("\nSuccessfully returned 8 output variables from split_and_preprocess!")
