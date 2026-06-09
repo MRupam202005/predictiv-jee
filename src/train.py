@@ -13,7 +13,13 @@ from features import split_and_preprocess
 def train_and_evaluate_model(X_train, X_test, y_train, y_test, name):
     """Initializes, trains, and evaluates the Random Forest model."""
     print(f"\nInitializing Random Forest Regressor for {name} (100 trees)...")
-    rf_model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+    rf_model = RandomForestRegressor(
+        n_estimators=100, 
+        random_state=42,
+        n_jobs=-1,
+        max_depth=20,
+        min_samples_leaf=4
+    )
     
     print(f"Starting {name} training on {len(X_train)} rows. This may take a minute...")
     start_time = time.time()
