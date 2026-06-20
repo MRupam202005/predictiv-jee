@@ -9,6 +9,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 export default function TrendChartModal({ isOpen, onClose, queryParams, predictedCutoff }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ export default function TrendChartModal({ isOpen, onClose, queryParams, predicte
   useEffect(() => {
     if (isOpen && queryParams) {
       setLoading(true);
-      fetch('http://127.0.0.1:8000/api/trends', {
+      fetch(`${API_BASE}/api/trends`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(queryParams)

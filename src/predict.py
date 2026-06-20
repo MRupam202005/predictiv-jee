@@ -24,12 +24,12 @@ def load_artifacts():
     
     try:
         # Load IIT Artifacts
-        artifacts['iit_model'] = joblib.load(os.path.join(models_dir, 'iit_model.pkl'))
+        artifacts['iit_model'] = joblib.load(os.path.join(models_dir, 'iit_model.pkl.gz'))
         with open(os.path.join(models_dir, 'iit_encoders.pkl'), 'rb') as f:
             artifacts['iit_encoders'] = pickle.load(f)
             
         # Load NIT Artifacts
-        artifacts['nit_model'] = joblib.load(os.path.join(models_dir, 'nit_model.pkl'))
+        artifacts['nit_model'] = joblib.load(os.path.join(models_dir, 'nit_model.pkl.gz'))
         with open(os.path.join(models_dir, 'nit_encoders.pkl'), 'rb') as f:
             artifacts['nit_encoders'] = pickle.load(f)
             

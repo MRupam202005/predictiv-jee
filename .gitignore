@@ -15,13 +15,13 @@ ENV/
 */.ipynb_checkpoints/*
 
 # Data and Models (DO NOT COMMIT TO GIT)
-data/raw/*
+# data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
-# data/external/*
+data/external/*
 !data/external/.gitkeep
-models/*.pkl
+# models/*.pkl
 models/*.h5
 models/*.pt
 models/*.joblib

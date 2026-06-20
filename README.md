@@ -1,3 +1,11 @@
+---
+title: Predictiv Jee Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
 # 🎓 Predictiv-JEE: ML-Powered College Recommendation Engine
 
 ![Tech Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20Scikit--Learn-blue)
