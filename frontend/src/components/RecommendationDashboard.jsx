@@ -134,38 +134,6 @@ function MiniRing({ pct }) {
     </div>
   );
 }
-/** A single branch row inside a CollegeGroup */
-function BranchRow({ rec }) {
-  const style = TAG_STYLES[rec.tag] || TAG_STYLES.Target;
-  const marginSign = rec.margin > 0 ? '+' : '';
-  const pct = calculateProbability(rec.predicted_cutoff - rec.margin, rec.predicted_cutoff);
-
-  return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${style.border} ${style.bg}`}>
-      {/* Probability ring */}
-      <MiniRing pct={pct} />
-
-      {/* Branch name */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-slate-200 leading-snug line-clamp-2">{rec.program}</p>
-      </div>
-
-      {/* Cutoff + margin */}
-      <div className="shrink-0 text-right">
-        <p className="text-slate-200 font-bold text-sm">{rec.predicted_cutoff.toLocaleString()}</p>
-        <p className={`text-xs font-medium ${rec.margin > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {marginSign}{rec.margin.toLocaleString()}
-        </p>
-      </div>
-
-      {/* Tag badge */}
-      <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${style.badge}`}>
-        {style.label}
-      </span>
-    </div>
-  );
-}
-
 /**
  * A single clickable college row with a smooth animated branch table below it.
  * Controlled externally via selectedCollege / onSelect props.
@@ -262,7 +230,7 @@ function CollegeRow({ college, filterTag, isSelected, onSelect, onTrendClick }) 
 
           {/* Branch rows */}
           {visibleBranches.map((rec, i) => {
-            const bStyle = TAG_STYLES[rec.tag] || TAG_STYLES.Target;
+
             const pct = calculateProbability(rec.predicted_cutoff - rec.margin, rec.predicted_cutoff);
             const marginSign = rec.margin > 0 ? '+' : '';
             const isFirst = i === 0;

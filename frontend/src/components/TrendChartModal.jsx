@@ -11,51 +11,56 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const isPred = payload[0].payload.isPrediction;
+    return (
+      <div className="bg-slate-900 border border-white/10 p-3 rounded-xl shadow-xl">
+        <p className="text-white font-bold mb-1">{label} {isPred ? '(Predicted)' : '(Actual)'}</p>
+        <p className="text-blue-400 text-sm">
+          Closing Rank: <span className="font-bold">{payload[0].value.toLocaleString()}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function TrendChartModal({ isOpen, onClose, queryParams, predictedCutoff }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let active = true;
     if (isOpen && queryParams) {
-      setLoading(true);
-      fetch(`${API_BASE}/api/trends`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(queryParams)
-      })
-      .then(res => res.json())
-      .then(result => {
-        // We append the 2026 prediction to the historical data
-        const combined = [
-          ...result.trends,
-          { year: 2026, closing_rank: predictedCutoff, isPrediction: true }
-        ];
-        setData(combined);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`${API_BASE}/api/trends`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(queryParams)
+          });
+          const result = await res.json();
+          if (active) {
+            const combined = [
+              ...result.trends,
+              { year: 2026, closing_rank: predictedCutoff, isPrediction: true }
+            ];
+            setData(combined);
+            setLoading(false);
+          }
+        } catch (err) {
+          console.error(err);
+          if (active) setLoading(false);
+        }
+      };
+      fetchData();
     }
+    return () => { active = false; };
   }, [isOpen, queryParams, predictedCutoff]);
 
   if (!isOpen) return null;
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const isPred = payload[0].payload.isPrediction;
-      return (
-        <div className="bg-slate-900 border border-white/10 p-3 rounded-xl shadow-xl">
-          <p className="text-white font-bold mb-1">{label} {isPred ? '(Predicted)' : '(Actual)'}</p>
-          <p className="text-blue-400 text-sm">
-            Closing Rank: <span className="font-bold">{payload[0].value.toLocaleString()}</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
